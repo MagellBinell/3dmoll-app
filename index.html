@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f2a24">
+<meta name="robots" content="noindex, nofollow">
+<title>3DMOLL</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="kopf">
+  <h1>3DMOLL</h1>
+  <button class="knopf-flach" id="neu-laden" aria-label="Neu laden" title="Neu laden">⟳</button>
+  <button class="knopf-flach" id="zu-einstellungen" aria-label="Einstellungen" title="Einstellungen">⚙</button>
+</header>
+
+<main id="inhalt">
+  <!-- Aufgaben -->
+  <section id="ansicht-aufgaben" class="ansicht">
+    <div class="segmente" role="group" aria-label="Aufgaben filtern">
+      <button data-fuer="daniel" aria-pressed="true">Für mich</button>
+      <button data-fuer="claude" aria-pressed="false">Für Claude</button>
+      <button data-fuer="" aria-pressed="false">Alle</button>
+    </div>
+    <ul id="aufgaben-liste" class="liste"></ul>
+    <p id="aufgaben-leer" class="leer" hidden>Nichts offen.</p>
+  </section>
+
+  <!-- Projekte -->
+  <section id="ansicht-projekte" class="ansicht" hidden>
+    <div class="segmente" role="group" aria-label="Status">
+      <button data-status="aktiv" aria-pressed="true">Aktiv</button>
+      <button data-status="idee" aria-pressed="false">Idee</button>
+      <button data-status="ruht" aria-pressed="false">Ruht</button>
+      <button data-status="fertig" aria-pressed="false">Fertig</button>
+      <button data-status="" aria-pressed="false">Alle</button>
+    </div>
+    <input type="search" id="projekt-suche" class="feld" placeholder="Projekt suchen">
+    <ul id="projekt-liste" class="karten"></ul>
+  </section>
+
+  <!-- Projekt im Detail -->
+  <section id="ansicht-projekt" class="ansicht" hidden>
+    <button class="knopf-flach zurueck" id="zurueck">‹ Projekte</button>
+    <h2 id="p-titel"></h2>
+    <p class="meta" id="p-meta"></p>
+    <label class="zeile">Status
+      <select id="p-status" class="feld">
+        <option value="aktiv">aktiv</option><option value="idee">idee</option>
+        <option value="ruht">ruht</option><option value="fertig">fertig</option>
+      </select>
+    </label>
+    <p id="p-ziel" class="ziel"></p>
+
+    <h3>Nächster Schritt</h3>
+    <textarea id="p-naechster" class="feld" rows="3" placeholder="Eine Zeile je Schritt"></textarea>
+    <button class="knopf" id="p-speichern">Speichern</button>
+
+    <h3>Offene Aufgaben</h3>
+    <ul id="p-aufgaben" class="liste"></ul>
+    <p id="p-aufgaben-leer" class="leer" hidden>Keine.</p>
+
+    <h3>Auftrag oder Merkzettel</h3>
+    <textarea id="p-auftrag" class="feld" rows="2" placeholder="Was soll passieren?"></textarea>
+    <div class="knopfreihe">
+      <button class="knopf" id="p-an-claude">An Claude</button>
+      <button class="knopf zweit" id="p-fuer-mich">Für mich</button>
+    </div>
+
+    <details><summary>Stand</summary><ul id="p-stand" class="punkte"></ul></details>
+    <details><summary>Offene Punkte</summary><ul id="p-offen" class="punkte"></ul></details>
+    <p><a id="p-link" target="_blank" rel="noopener">Projektdatei auf GitHub</a></p>
+  </section>
+
+  <!-- Neu -->
+  <section id="ansicht-neu" class="ansicht" hidden>
+    <h2>Neue Aufgabe</h2>
+    <textarea id="n-text" class="feld" rows="3" placeholder="Was soll passieren?"></textarea>
+    <label class="zeile">Projekt <select id="n-projekt" class="feld"></select></label>
+    <div class="knopfreihe">
+      <button class="knopf" id="n-an-claude">An Claude</button>
+      <button class="knopf zweit" id="n-fuer-mich">Für mich</button>
+    </div>
+    <p class="hinweis">„An Claude“: Claude darf das allein erledigen (Label claude). „Für mich“: Merkzettel für dich (Label daniel).</p>
+  </section>
+
+  <!-- Einstellungen -->
+  <section id="ansicht-einstellungen" class="ansicht" hidden>
+    <h2>Zugang zu GitHub</h2>
+    <p class="hinweis">Die App liest und schreibt direkt im Repo <b>MagellBinell/3DMOLL</b>. Dafür braucht sie einmal einen Schlüssel von GitHub. Er bleibt nur auf diesem Gerät gespeichert und geht nur an GitHub.</p>
+    <ol class="hinweis">
+      <li>Auf github.com: Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token.</li>
+      <li>Repository access: Only select repositories → <b>3DMOLL</b>.</li>
+      <li>Permissions: <b>Contents</b> Read and write, <b>Issues</b> Read and write. Ablauf: 1 Jahr.</li>
+      <li>Schlüssel kopieren und hier einfügen.</li>
+    </ol>
+    <input type="password" id="e-token" class="feld" autocomplete="off" placeholder="github_pat_…">
+    <div class="knopfreihe">
+      <button class="knopf" id="e-speichern">Speichern und prüfen</button>
+      <button class="knopf zweit" id="e-loeschen">Schlüssel entfernen</button>
+    </div>
+    <p id="e-stand" class="hinweis"></p>
+  </section>
+</main>
+
+<nav class="leiste" aria-label="Bereiche">
+  <button data-ansicht="aufgaben" aria-current="page">Aufgaben</button>
+  <button data-ansicht="projekte">Projekte</button>
+  <button data-ansicht="neu">+ Neu</button>
+</nav>
+
+<div id="meldung" class="meldung" role="status" hidden></div>
+
+<script src="logik.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
