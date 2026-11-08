@@ -1,5 +1,5 @@
 /* Hält nur die App selbst vor (startet ohne Netz). Daten von GitHub werden nie zwischengespeichert. */
-const STAND = '3dmoll-app-2';
+const STAND = '3dmoll-app-3';
 const DATEIEN = ['./', 'index.html', 'app.css', 'logik.js', 'app.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(STAND).then((c) => c.addAll(DATEIEN))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
@@ -9,8 +9,9 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (url.origin !== self.location.origin || e.request.method !== 'GET') return;
-  // Netz zuerst, damit ein neuer Stand sofort ankommt; ohne Netz die gespeicherte Fassung.
-  e.respondWith(fetch(e.request).then((r) => {
+  // Netz zuerst und am Browser-Zwischenspeicher vorbei: GitHub Pages erlaubt 10 Minuten Zwischenspeichern,
+  // so lange lief nach einer neuen Fassung noch die alte (2026-11-08, Rückgängig fehlte). Ohne Netz die gespeicherte.
+  e.respondWith(fetch(e.request, { cache: 'no-cache' }).then((r) => {
     const kopie = r.clone(); caches.open(STAND).then((c) => c.put(e.request, kopie)); return r;
   }).catch(() => caches.match(e.request)));
 });
