@@ -301,4 +301,10 @@ zustand.aufgaben = lesen(SPEICHER.aufgaben, []);
 zustand.schritte = lesen(SPEICHER.schritte, {});
 zeichneAlles();
 if (token()) allesLaden(); else zeige('einstellungen');
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((r) => r.update()).catch(() => {});
+  // Übernimmt eine neue Fassung die Seite, einmal neu laden, damit nicht alte und neue Dateien gemischt laufen.
+  // Beim allerersten Besuch gibt es noch keine alte Fassung, dann nicht neu laden.
+  let neuGeladen = !navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!neuGeladen) { neuGeladen = true; location.reload(); } });
+}
