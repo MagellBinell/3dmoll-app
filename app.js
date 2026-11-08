@@ -30,10 +30,15 @@ function merken(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catc
 function token() { try { return localStorage.getItem(SPEICHER.token) || ''; } catch { return ''; } }
 
 let meldungUhr = 0;
-function melden(text, fehler) {
+/* Kurze Meldung unten; mit aktion ({ text, tun }) bekommt sie einen Knopf, z. B. „Rückgängig“. */
+function melden(text, fehler, aktion) {
   const m = $('meldung');
-  m.textContent = text; m.className = 'meldung' + (fehler ? ' fehler' : ''); m.hidden = false;
-  clearTimeout(meldungUhr); meldungUhr = setTimeout(() => { m.hidden = true; }, fehler ? 6000 : 2500);
+  m.replaceChildren(el('span', {}, text));
+  if (aktion) {
+    m.append(el('button', { class: 'meldung-knopf', onclick: () => { m.hidden = true; clearTimeout(meldungUhr); aktion.tun(); } }, aktion.text));
+  }
+  m.className = 'meldung' + (fehler ? ' fehler' : ''); m.hidden = false;
+  clearTimeout(meldungUhr); meldungUhr = setTimeout(() => { m.hidden = true; }, fehler || aktion ? 7000 : 2500);
 }
 
 /* ---------- GitHub ---------- */
@@ -117,9 +122,21 @@ async function aufgabeAbhaken(a, li, box) {
     li.classList.add('erledigt');
     zustand.aufgaben = zustand.aufgaben.filter((x) => x.nr !== a.nr);
     merken(SPEICHER.aufgaben, zustand.aufgaben);
-    melden('Erledigt: #' + a.nr);
+    melden('Erledigt: #' + a.nr, false, { text: 'Rückgängig', tun: () => aufgabeWiederOeffnen(a) });
     setTimeout(zeichneAlles, 900);
   } catch (e) { box.checked = false; box.disabled = false; melden(e.message, true); }
+}
+
+/* Versehentlich abgehakt: wieder öffnen. */
+async function aufgabeWiederOeffnen(a) {
+  try {
+    await api('/repos/' + REPO + '/issues/' + a.nr, { method: 'PATCH', body: JSON.stringify({ state: 'open' }) });
+    if (!zustand.aufgaben.some((x) => x.nr === a.nr)) zustand.aufgaben.unshift(a);
+    merken(SPEICHER.aufgaben, zustand.aufgaben);
+    zeichneAlles();
+    if (zustand.ansicht === 'projekt' && zustand.offen) oeffneProjekt(zustand.offen.projekt);
+    melden('#' + a.nr + ' ist wieder offen.');
+  } catch (e) { melden(e.message, true); }
 }
 
 /* Status und nächsten Schritt speichern: PROJEKTE.md und Projektdatei immer zusammen (Regel in 3DMOLL). */

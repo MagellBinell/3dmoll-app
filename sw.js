@@ -1,5 +1,5 @@
 /* Hält nur die App selbst vor (startet ohne Netz). Daten von GitHub werden nie zwischengespeichert. */
-const STAND = '3dmoll-app-1';
+const STAND = '3dmoll-app-2';
 const DATEIEN = ['./', 'index.html', 'app.css', 'logik.js', 'app.js', 'manifest.webmanifest', 'icon.svg', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(STAND).then((c) => c.addAll(DATEIEN))); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {

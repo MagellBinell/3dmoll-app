@@ -18,7 +18,7 @@ issues = [
     {"number": 9, "title": "[zaehlanlage] Inbetriebnahme Schritt 1", "labels": [{"name": "claude"}], "html_url": "https://x/9", "created_at": "2026-11-02"},
     {"number": 10, "title": "Setup", "labels": [], "html_url": "https://x/10", "created_at": "2026-11-02", "pull_request": {}},
 ]
-geschrieben, angelegt, geschlossen = {}, [], []
+geschrieben, angelegt, geschlossen, geoeffnet = {}, [], [], []
 sha = lambda t: "sha" + str(abs(hash(t)) % 10**8)
 
 def route(r):
@@ -33,7 +33,9 @@ def route(r):
         return r.fulfill(json={"number": 99, "title": b["title"], "labels": [{"name": l} for l in b["labels"]], "html_url": "https://x/99"})
     mm = re.search(r"/issues/(\d+)$", url)
     if mm and m == "PATCH":
-        geschlossen.append(int(mm.group(1))); return r.fulfill(json={})
+        b = json.loads(r.request.post_data)
+        (geschlossen if b.get("state") == "closed" else geoeffnet).append(int(mm.group(1)))
+        return r.fulfill(json={})
     mm = re.search(r"/contents/(.+?)(\?|$)", url)
     if mm:
         pfad = mm.group(1).replace("%C3%A4", "ä")
@@ -72,8 +74,12 @@ with sync_playwright() as p:
     s.click("#ansicht-aufgaben .segmente button[data-fuer='']")
     pruef("Alle: ohne Pull Request", s.locator("#aufgaben-liste li").count() == 2)
     s.locator("#aufgaben-liste input[type=checkbox]").first.check()
+    s.wait_for_selector(".meldung-knopf")
     s.wait_for_timeout(300)
     pruef("Abhaken schließt das Issue", geschlossen == [5], geschlossen)
+    s.click(".meldung-knopf"); s.wait_for_timeout(300)
+    pruef("Rückgängig öffnet das Issue wieder", geoeffnet == [5], geoeffnet)
+    pruef("Aufgabe wieder in der Liste", "Mem-Connector" in s.inner_text("#aufgaben-liste"))
 
     s.click(".leiste button[data-ansicht='projekte']")
     s.wait_for_selector("#projekt-liste .karte")
