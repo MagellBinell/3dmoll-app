@@ -61,3 +61,6 @@ a { color: var(--akzent); }
 .meldung { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom));
            max-width: 92vw; background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: var(--r); font-size: 14px; z-index: 4; }
 .meldung.fehler { background: var(--bad); color: #fff; }
+.meldung { display: flex; gap: 14px; align-items: center; }
+.meldung[hidden] { display: none; }
+.meldung-knopf { font: inherit; font-weight: 700; background: none; border: 0; color: inherit; text-decoration: underline; padding: 4px; cursor: pointer; }
